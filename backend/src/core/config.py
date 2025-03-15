@@ -1,6 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseSettings, PostgresDsn, validator
+from pydantic_settings import BaseSettings
+from pydantic import PostgresDsn, validator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,14 +21,17 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
-        return PostgresDsn.build(
-            scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            port=values.get("POSTGRES_PORT"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
-        )
+        
+        # En Pydantic v2, no podemos usar PostgresDsn.build con esos parámetros
+        # En su lugar, construimos la URL manualmente
+        user = values.get("POSTGRES_USER")
+        password = values.get("POSTGRES_PASSWORD")
+        host = values.get("POSTGRES_SERVER")
+        port = values.get("POSTGRES_PORT")
+        db = values.get('POSTGRES_DB', '')
+        
+        # Construir la URL de conexión manualmente
+        return f"postgresql://{user}:{password}@{host}:{port}/{db}"
     
     # Configuración CORS
     BACKEND_CORS_ORIGINS: List[str] = [
