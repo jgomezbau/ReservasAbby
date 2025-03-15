@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import os
 
 from .api.api import api_router
 from .core.config import settings
@@ -9,27 +11,28 @@ from .db.database import engine, Base
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title="Reservas Abby API",
+    description="API para el sistema de reservas",
+    version="1.0.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Configurar CORS
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Configurar CORS para permitir peticiones desde el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, limita esto a tu dominio frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Incluir las rutas de la API
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
-def root():
-    return {"message": "Bienvenido a la API de Reservas Abby House"}
+async def root():
+    return {"message": "Bienvenido a la API de Reservas Abby"}
 
-@app.get("/health")
-def health_check():
+@app.get("/api/v1/health")
+async def health_check():
     return {"status": "ok"}
