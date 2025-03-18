@@ -1,4 +1,5 @@
 # Sistema de Gestión de Reservas Abby House
+# Proyecto en Desarrollo, no funciona aun
 
 Sistema web para gestionar reservas de propiedades en Airbnb, Booking y reservas particulares.
 
